@@ -3,7 +3,7 @@ import base64
 from security import *
 
 PORT = 9999
-SERVER = socket.gethostname()
+SERVER = "127.0.0.1"
 DC = "close"
 client_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 

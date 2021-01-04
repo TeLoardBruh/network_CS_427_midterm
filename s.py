@@ -5,7 +5,7 @@ import random
 from security import *
 
 PORT = 9999
-SERVER = socket.gethostname()
+SERVER = "127.0.0.1"
 DC = "close"
 WRITE = 'write'
 VIEW = 'view'
