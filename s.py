@@ -2,6 +2,7 @@ import socket
 import os.path
 import base64
 import random
+from security import *
 
 PORT = 9999
 SERVER = socket.gethostname()
@@ -13,90 +14,7 @@ WELCOME_TEXT = 'STFMP supports three operations:\n- write: write content to the 
 server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
 server_socket.bind((SERVER,PORT))
-# The Encryption Function
-def cipher_encrypt(plain_text, key):
-
-    encrypted = ""
-
-    for c in plain_text:
-
-        if c.isupper(): #check if it's an uppercase character
-
-            c_index = ord(c) - ord('A')
-
-            # shift the current character by key positions
-            c_shifted = (c_index + key) % 26 + ord('A')
-
-            c_new = chr(c_shifted)
-
-            encrypted += c_new
-
-        elif c.islower(): #check if its a lowecase character
-
-            # subtract the unicode of 'a' to get index in [0-25) range
-            c_index = ord(c) - ord('a') 
-
-            c_shifted = (c_index + key) % 26 + ord('a')
-
-            c_new = chr(c_shifted)
-
-            encrypted += c_new
-
-        elif c.isdigit():
-
-            # if it's a number,shift its actual value 
-            c_new = (int(c) + key) % 10
-
-            encrypted += str(c_new)
-
-        else:
-
-            # if its neither alphabetical nor a number, just leave it like that
-            encrypted += c
-
-    return encrypted
-
-# The Decryption Function
-def cipher_decrypt(ciphertext, key):
-
-    decrypted = ""
-
-    for c in ciphertext:
-
-        if c.isupper(): 
-
-            c_index = ord(c) - ord('A')
-
-            # shift the current character to left by key positions to get its original position
-            c_og_pos = (c_index - key) % 26 + ord('A')
-
-            c_og = chr(c_og_pos)
-
-            decrypted += c_og
-
-        elif c.islower(): 
-
-            c_index = ord(c) - ord('a') 
-
-            c_og_pos = (c_index - key) % 26 + ord('a')
-
-            c_og = chr(c_og_pos)
-
-            decrypted += c_og
-
-        elif c.isdigit():
-
-            # if it's a number,shift its actual value 
-            c_og = (int(c) - key) % 10
-
-            decrypted += str(c_og)
-
-        else:
-
-            # if its neither alphabetical nor a number, just leave it like that
-            decrypted += c
-
-    return decrypted
+um_key = random.randint(0,9)
 
 def hand_clinet(conn,addr):
     print(f"New connection {addr} connected")
@@ -139,14 +57,15 @@ def hand_clinet(conn,addr):
             # conn.send(bytes(f.read(),"utf-8"))
             # print(f.read())
             f.close()
-            conn.send(bytes(PROTOCOL_VERSION+"##ok##The file has been written.here is your Security : "+str(num_key),"utf-8"))
+            conn.send(bytes(PROTOCOL_VERSION+"##ok##The file has been written.here is your Security key: "+str(num_key),"utf-8"))
 
 
         else:
             conn.send(bytes(PROTOCOL_VERSION+"##invalid##Invalid request.","utf-8"))
         print("end if loop")
-        print(msg.split("##"))
-        print(f"{addr}: {msg}")
+        # print(msg.split("##"))
+        en = cipher_encrypt(msg,int(um_key))
+        print(f"{addr}: {en}")
             # print("end of loop")
             
     print("out of loop")
@@ -158,11 +77,10 @@ def start():
     server_socket.listen()
     
     conn,addr = server_socket.accept()
-    conn.send(bytes(WELCOME_TEXT,"utf-8"))
-
+    conn.send(bytes(WELCOME_TEXT + "\n"+ "Your key is :"+str(um_key),"utf-8"))
     hand_clinet(conn,addr)
+    
     print("end")
-
 
 
 print("SERVER IS UP AND RUNNING")
